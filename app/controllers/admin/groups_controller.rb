@@ -5,9 +5,9 @@ module Admin
 
     # GET /admin/groups
     def index
-      @groups = Group.all
+      groups = Group.all
 
-      render json: @groups
+      render json: groups
     end
 
     # GET /groups/1
@@ -17,12 +17,12 @@ module Admin
 
     # POST /groups
     def create
-      @group = Group.new(group_params)
-      if @group.save
-        @group = Group.all.where('groups.id' => @group.id).select(:id,:group_type,:group_number)
-        render json: @group, status: :created
+      group = Group.new(group_params)
+      if group.save
+        group = Group.all.where('groups.id' => group.id).select(:id,:group_type,:group_number)
+        render json: group, status: :created
       else
-        render json: @group.errors, status: :unprocessable_entity
+        render json: group.errors, status: :unprocessable_entity
       end
     end
 

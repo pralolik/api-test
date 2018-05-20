@@ -5,9 +5,9 @@ module Teacher
 
     # GET /questions
     def index
-      @questions = Question.all
+      questions = Question.all
 
-      render json: @questions
+      render json: questions
     end
 
     # GET /questions/1
@@ -17,18 +17,18 @@ module Teacher
 
     # POST /questions
     def create
-      @question = Question.new(question_params)
-      @question_type = params[:question_type]
-      @question_answers = params[:answers]
-      if @question.save
-        if @question_type != Question::QUESTION_TYPE_INPUT
-          @question_answers.each do |answer|
-            QuestionSelect.new(select_text: answer[:select_text], is_valid: answer[:is_valid], question_id: @question.id).save
+      question = Question.new(question_params)
+      question_type = params[:question_type]
+      question_answers = params[:answers]
+      if question.save
+        if question_type != Question::QUESTION_TYPE_INPUT
+          question_answers.each do |answer|
+            QuestionSelect.new(select_text: answer[:select_text], is_valid: answer[:is_valid], question_id: question.id).save
           end
         end
-        render json: @question, status: :created
+        render json: question, status: :created
       else
-        render json: @question.errors, status: :unprocessable_entity
+        render json: question.errors, status: :unprocessable_entity
       end
     end
 

@@ -1,0 +1,2 @@
+class LessonMark < ApplicationRecord
+end

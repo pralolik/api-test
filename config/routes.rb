@@ -18,6 +18,11 @@ Rails.application.routes.draw do
   get 'admin/students/:id/lessons', to: 'admin/students#lessons'
   put 'admin/students/:id/group/', to: 'admin/students#set_group'
   delete 'admin/students/:id/group/', to: 'admin/students#delete_group'
+  get 'student', to: 'student#index'
+  get 'student/lessons', to: 'student#show_lessons'
+  get 'student/lessons/:id', to: 'student#lesson_details'
+  get 'student/test/:id', to: 'student#start_test'
+  put 'student/test/update/:variant_id', to: 'student#update_test'
   ##teacher part
   get 'admin/teachers/:id/lessons', to: 'admin/teachers#get_lessons'
   ##user part
@@ -30,5 +35,8 @@ Rails.application.routes.draw do
     resources :question_selects
     resources :variants
   end
+  get 'teacher', to: 'teacher#index'
+  get 'teacher/lessons', to: 'teacher#show_lessons'
+  get 'teacher/lessons/:id', to: 'teacher#lesson_details'
 
 end

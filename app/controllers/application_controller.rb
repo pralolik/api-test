@@ -28,4 +28,14 @@ class ApplicationController < ActionController::API
       render json: { error: 'Forbidden' }, status: 403
     end
   end
+
+  def is_student
+    if @current_user == nil
+      @current_user = AuthorizeApiRequest.call(request.headers).result
+    end
+    render json: { error: 'Not Authorized' }, status: 401 unless @current_user
+    if @current_user.role.role_type != Role::STUDENT_ROLE
+      render json: { error: 'Forbidden' }, status: 403
+    end
+  end
 end

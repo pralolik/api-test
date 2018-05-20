@@ -2,6 +2,7 @@ class Lesson < ApplicationRecord
   belongs_to :user
   has_and_belongs_to_many :group
   has_many :test
+  has_one :lesson_mark
 
   LESSON_TYPE_FLOW = 'FLOW'
   LESSON_TYPE_PRACTICE = 'PRACTISE'

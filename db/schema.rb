@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_05_17_221512) do
+ActiveRecord::Schema.define(version: 2018_05_20_205403) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -36,6 +36,26 @@ ActiveRecord::Schema.define(version: 2018_05_17_221512) do
     t.bigint "user_id"
     t.index ["group_id"], name: "index_groups_users_on_group_id"
     t.index ["user_id"], name: "index_groups_users_on_user_id"
+  end
+
+  create_table "lesson_marks", force: :cascade do |t|
+    t.bigint "lesson_id"
+    t.integer "marks_count"
+    t.text "marks_template"
+    t.boolean "is_visible_to_student"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lesson_id"], name: "index_lesson_marks_on_lesson_id"
+  end
+
+  create_table "lesson_marks_results", force: :cascade do |t|
+    t.bigint "lesson_mark_id"
+    t.bigint "user_id"
+    t.text "marks_json"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lesson_mark_id"], name: "index_lesson_marks_results_on_lesson_mark_id"
+    t.index ["user_id"], name: "index_lesson_marks_results_on_user_id"
   end
 
   create_table "lessons", force: :cascade do |t|
@@ -64,6 +84,35 @@ ActiveRecord::Schema.define(version: 2018_05_17_221512) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["variant_id"], name: "index_questions_on_variant_id"
+  end
+
+  create_table "result_answers", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "result_id"
+    t.bigint "question_id"
+    t.bigint "question_select_id"
+    t.text "question_answer_text"
+    t.boolean "is_valid"
+    t.boolean "is_checked"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["question_id"], name: "index_result_answers_on_question_id"
+    t.index ["question_select_id"], name: "index_result_answers_on_question_select_id"
+    t.index ["result_id"], name: "index_result_answers_on_result_id"
+    t.index ["user_id"], name: "index_result_answers_on_user_id"
+  end
+
+  create_table "results", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "variant_id"
+    t.string "tmp_json"
+    t.date "end_date"
+    t.boolean "require_check"
+    t.integer "total_mark"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_results_on_user_id"
+    t.index ["variant_id"], name: "index_results_on_variant_id"
   end
 
   create_table "roles", force: :cascade do |t|

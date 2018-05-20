@@ -5,9 +5,9 @@ module Teacher
 
   # GET /tests
   def index
-    @tests = Test.all
+    tests = Test.all
 
-    render json: @tests
+    render json: tests
   end
 
   # GET /tests/1
@@ -17,22 +17,22 @@ module Teacher
 
   # POST /tests
   def create
-    @test = Test.new(test_params)
-    @test_variants_type = params[:type_of_variant]
-    @test_variants_count = params[:variants_count]
-    if @test.save
-      if @test_variants_type != Test::VARIANT_TYPE_ONE
-        for i in 1..@test_variants_count
-          @new_variant = Variant.new(variant_text: "Вариант#{i}", test_id: @test.id)
-          @new_variant.save
+    test = Test.new(test_params)
+    test_variants_type = params[:type_of_variant]
+    test_variants_count = params[:variants_count]
+    if test.save
+      if test_variants_type != Test::VARIANT_TYPE_ONE
+        for i in 1..test_variants_count
+          new_variant = Variant.new(variant_text: "Вариант#{i}", test_id: test.id)
+          new_variant.save
         end
       elsif @test_variants_type == Test::VARIANT_TYPE_ONE
-        @new_variant = Variant.new(variant_text: 'Вариант1', test_id: @test.id)
-        @new_variant.save
+        new_variant = Variant.new(variant_text: 'Вариант1', test_id: test.id)
+        new_variant.save
       end
-      render json: @test, status: :created
+      render json: test, status: :created
     else
-      render json: @test.errors, status: :unprocessable_entity
+      render json: test.errors, status: :unprocessable_entity
     end
   end
 
