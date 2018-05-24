@@ -38,6 +38,16 @@ class StudentController < ApplicationController
     end
   end
 
+  #GET /student/tests
+  def get_tests
+    lessons = Lesson.all.left_joins(:group, :user)
+                  .where('groups.id' => @current_user.group.first.id).select(:id,:lesson_name,:lesson_type,:name,:surname)
+    tests = Test.all.left_joins(:lesson).where('tests.lesson_id' => lessons.ids, 'lessons.id' => lessons.ids)
+                .select(:id, :test_name, :due_date, :lesson_name)
+
+    render json: tests
+  end
+
   #GET /student/test/:id
   def start_test
     result = Result.all.where('results.user_id' => @current_user.id).first
@@ -139,7 +149,7 @@ class StudentController < ApplicationController
         current_questions.push(get_input_question_json(question))
       end
     end
-    current_variant[:questions] = @current_questions
+    current_variant[:questions] = current_questions
 
     return current_variant
   end

@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   get 'student/lessons', to: 'student#show_lessons'
   get 'student/lessons/:id', to: 'student#lesson_details'
   get 'student/test/:id', to: 'student#start_test'
+  get 'student/tests', to: 'student#get_tests'
   put 'student/test/update/:variant_id', to: 'student#update_test'
   ##teacher part
   get 'admin/teachers/:id/lessons', to: 'admin/teachers#get_lessons'
