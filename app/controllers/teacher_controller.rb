@@ -39,14 +39,27 @@ class TeacherController < ApplicationController
                    .first
 
     if lesson != nil
-      lessonArray = @lesson.attributes
+      lessonArray = lesson.attributes
       lessonGroups = Group.all.joins(:lesson).select(:id, :group_number).where('lessons.id' => lesson.id)
-      lessonTests = Test.all.joins(:lesson).select(:id, :test_name).where('lessons.id' => lesson.id)
       lessonArray[:lesson_groups] = lessonGroups
-      lessonArray[:lesson_tests] = lessonTests
       render json:  lessonArray
     else
       render json: lesson.errors, status: :unprocessable_entity
+    end
+  end
+
+  #GET teacher/lessons/:id/group/:group
+  def lesson_group_people_list
+    users = User.all
+                .left_joins(:group, :role)
+                .select(:id,:name,:surname)
+                .order(:id)
+                .where('groups.group_number' => params[:group])
+                .where('roles.role_type' => Role::STUDENT_ROLE)
+    if users
+      render json: users, status: :ok
+    else
+      render json: users.errors, status: :unprocessable_entity
     end
   end
 

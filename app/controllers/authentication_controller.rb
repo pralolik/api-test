@@ -12,7 +12,7 @@ class AuthenticationController < ApplicationController
     end
   end
 
-  def logout
+  def check
 
   end
 

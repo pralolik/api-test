@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   get 'student/test/:id', to: 'student#start_test'
   get 'student/tests', to: 'student#get_tests'
   put 'student/test/update/:variant_id', to: 'student#update_test'
+  post 'student/test/end/:variant_id', to: 'student#end_test'
   ##teacher part
   get 'admin/teachers/:id/lessons', to: 'admin/teachers#get_lessons'
   ##user part
@@ -39,5 +40,6 @@ Rails.application.routes.draw do
   get 'teacher', to: 'teacher#index'
   get 'teacher/lessons', to: 'teacher#show_lessons'
   get 'teacher/lessons/:id', to: 'teacher#lesson_details'
+  get 'teacher/lessons/:id/group/:group', to: 'teacher#lesson_group_people_list'
 
 end

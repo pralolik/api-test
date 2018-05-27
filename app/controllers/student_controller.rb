@@ -86,18 +86,19 @@ class StudentController < ApplicationController
     end
   end
 
+  #POST /student/test/end/:variant_id
   def end_test
     result = Result.all.where('results.user_id' => @current_user.id).first
     if result and result.end_date == nil
-      result.tmp_json = params
-      result.end_date = Date.today.to_s
-      result.require_check = get_requre_check(params[:questions])
+      result.tmp_json = params.to_json
+      #result.end_date = Date.today.to_s
+      #result.require_check = get_requre_check(params[:questions])
       if result.save
-        if save_results(result)
-          render json: ['success' => 'Test result saved']
-        end
+        # if save_results(result)
+           render json: ['success' => 'Test result saved']
+        # end
       end
-        render json: ['error' => 'Error with your answers']
+        #render json: ['error' => 'Error with your answers']
       return
     elsif result and result.end_date != nil
       render json: ['error'=>'You already pass this test']
