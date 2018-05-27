@@ -66,67 +66,9 @@ class StudentController < ApplicationController
      end
   end
 
-  #PUT /student/test/update/:variant_id
-  def update_test
-    result = Result.all.where('results.user_id' => @current_user.id, 'results.variant_id' => params[:variant_id]).first
-    if result and result.end_date == nil
-      params.delete :student
-      params.delete :action
-      params.delete :controller
-      params.delete :variant_id
-      result_tmp = params.to_json
-      result.tmp_json = result_tmp
-      if result.save
-        render json: result.tmp_json
-      end
-      return
-    elsif result and result.end_date != nil
-      render json: ['error'=>'You already pass this test']
-      return
-    end
-  end
-
-  #POST /student/test/end/:variant_id
-  def end_test
-    result = Result.all.where('results.user_id' => @current_user.id).first
-    if result and result.end_date == nil
-      result.tmp_json = params.to_json
-      #result.end_date = Date.today.to_s
-      #result.require_check = get_requre_check(params[:questions])
-      if result.save
-        # if save_results(result)
-           render json: ['success' => 'Test result saved']
-        # end
-      end
-        #render json: ['error' => 'Error with your answers']
-      return
-    elsif result and result.end_date != nil
-      render json: ['error'=>'You already pass this test']
-      return
-    end
-  end
-
-  #TODO insert this method
-  def save_results(result)
-    params[:questions].each do |question|
-      if question.question_type == Question::QUESTION_TYPE_SELECT
-        question_result = ResultAnswer.new(user_id: @current_user.id,
-                                           result_id: result.id,
-                                           question_id: question.id,
-                                           question_select_id: question.selected_answer
-        )
-      elsif question.question_type == Question::QUESTION_TYPE_MULTISELECT
-      elsif question.question_type == Question::QUESTION_TYPE_INPUT
-      end
-      if question_result
-        question_result.save
-      end
-    end
-
-  end
 
   def get_variant
-    current_test = Test.find(params[:id])
+    current_test = Test.all.where('tests.is_active'=> true, 'tests.id' => params[:id]).first
     if current_test.type_of_variant == Test::VARIANT_TYPE_ONE
       return current_test.variant.first
     elsif current_test.type_of_variant == Test::VARIANT_TYPE_RANDOM
@@ -158,7 +100,7 @@ class StudentController < ApplicationController
   def get_select_question_json(question)
     current_question = question.attributes
     question_answers = QuestionSelect.all.where('question_selects.question_id' => question.id)
-                            .select(:id, :select_text)
+                           .select(:id, :select_text)
     current_question[:answers] = question_answers
     current_question[:selected_answer] = nil
 
@@ -168,7 +110,7 @@ class StudentController < ApplicationController
   def get_multiselect_question_json(question)
     current_question = question.attributes
     question_answers = QuestionSelect.all.where('question_selects.question_id' => question.id)
-                            .select(:id, :select_text)
+                           .select(:id, :select_text)
     current_question[:answers] = question_answers
     current_question[:selected_answer] = nil
 
@@ -184,15 +126,123 @@ class StudentController < ApplicationController
 
   def sorted_variant(test)
     users = User.all
-                 .left_joins(:group, :role)
-                 .where('groups.id' => @current_user.group.first.id)
-                 .where('roles.role_type' => Role::STUDENT_ROLE)
-                 .order(:surname)
-                 .order(:name)
+                .left_joins(:group, :role)
+                .where('groups.id' => @current_user.group.first.id)
+                .where('roles.role_type' => Role::STUDENT_ROLE)
+                .order(:surname)
+                .order(:name)
 
     student_number = users.to_a.map(&:surname).index(current_user.surname)
     student_number = student_number + 1
     variant_number = student_number - (student_number/test.variants_count).floor * test.variants_count
     test.variant[variant_number]
   end
+
+  #PUT /student/test/update/:variant_id
+  def update_test
+    result = Result.all.where('results.user_id' => @current_user.id, 'results.variant_id' => params[:variant_id]).first
+    if result and result.end_date == nil
+      params.delete :student
+      params.delete :action
+      params.delete :controller
+      params.delete :variant_id
+      result_tmp = params.to_json
+      result.tmp_json = result_tmp
+      if result.save
+        render json: result.tmp_json
+      end
+      return
+    elsif result and result.end_date != nil
+      render json: ['error'=>'You already pass this test']
+      return
+    end
+  end
+
+  #POST /student/test/end/:variant_id
+  def end_test
+    result = Result.all.where('results.user_id' => @current_user.id).first
+    if result and result.end_date == nil
+      result.tmp_json = params.to_json
+      result.end_date = Date.today.to_s
+      result.require_check = get_require_check(params[:questions])
+      if result.save
+         if save_results(result)
+           render json: ['success' => 'Test result saved']
+         end
+      end
+        render json: ['error' => 'Error with your answers']
+      return
+    elsif result and result.end_date != nil
+      render json: ['error'=>'You already pass this test']
+      return
+    end
+  end
+
+  def get_require_check(questions)
+    require = false
+
+    questions.each do |question|
+      if question[:question_type] == Question::QUESTION_TYPE_INPUT
+        require = true
+      end
+    end
+
+    return require
+  end
+
+  def save_results(result)
+    params[:questions].each do |question|
+      if question[:question_type] == Question::QUESTION_TYPE_SELECT
+        question_selects = QuestionSelect.all.where('question_selects.question_id' => question[:id], 'question_selects.is_valid' => true)
+        valid = validate(question_selects, question[:selected_answer])
+        question_result = ResultAnswer.new(user_id: @current_user.id,
+                                           result_id: result.id,
+                                           question_id: question[:id],
+                                           question_select_id: question[:selected_answer].to_s,
+                                           is_checked: true,
+                                           is_valid: valid)
+
+      elsif question[:question_type] == Question::QUESTION_TYPE_MULTISELECT
+        question_selects = QuestionSelect.all.where('question_selects.question_id' => question[:id], 'question_selects.is_valid' => true)
+        valid = validate(question_selects, question[:selected_answer])
+        question_result = ResultAnswer.new(user_id: @current_user.id,
+                                           result_id: result.id,
+                                           question_id: question[:id],
+                                           question_select_id: question[:selected_answer].to_s,
+                                           is_checked: true,
+                                           is_valid: valid)
+      elsif question[:question_type] == Question::QUESTION_TYPE_INPUT
+        question_result = ResultAnswer.new(user_id: @current_user.id,
+                                           result_id: result.id,
+                                           question_id: question[:id],
+                                           question_answer_text: question[:text_answer],
+                                           is_checked: false,
+                                           is_valid: false)
+      end
+      if !question_result.save
+        break
+      end
+    end
+  end
+
+  def validate (selects, selected)
+    if selects.length != selected.length
+      return false
+    end
+    valid = true
+    selects.each do |valid_answer|
+      finded = false
+      selected.each do |result_answer|
+        if valid_answer.id == result_answer
+          finded = true
+        end
+      end
+      if finded == false
+        valid = false
+      end
+    end
+
+    return valid
+  end
+
 end
